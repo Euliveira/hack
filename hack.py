@@ -7,13 +7,13 @@ os.system('clear')
 time.sleep(1)
 os.system('figlet Hacking')
 time.sleep(1)
-os.system('figlet Deoliveira')
+os.system('figlet Euliveira')
 time.sleep(3)
 
 print("""
 ••••••••••••••••••••••••••••••••••••••••••••••
       DESENVOLVEDOR: WILLIAN DE OLIVEIRA
-             HACKING NAO É CRIME
+             HACKING NAO EH CRIME
 •••••••••••••••••••••••••••••••••••••••••••••""")
 time.sleep(1)
 IP = input('Digite o IP: ')
