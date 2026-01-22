@@ -12,8 +12,8 @@ time.sleep(3)
 
 print("""
 ••••••••••••••••••••••••••••••••••••••••••••••
-      DESENVOLVEDOR: WILLIAN DE OLIVEIRA
-             HACKING NAO EH CRIME
+   WILLIAN DE OLIVEIRA
+   HACKING NAO EH CRIME
 •••••••••••••••••••••••••••••••••••••••••••••""")
 time.sleep(1)
 IP = input('Digite o IP: ')
