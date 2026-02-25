@@ -3,17 +3,27 @@ import requests
 import joblib
 import pandas as pd
 import numpy as np
+import time
 from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 
 # --- CAMADA DE INFRAESTRUTURA ---
-def get_cred(file):
-    """Lê tokens conforme a regra de arquivos separados."""
-    if os.path.exists(file):
-        with open(file, "r") as f:
-            return f.read().strip()
+def get_cred(variable_name):
+    """
+    Lê tokens conforme a regra de arquivos separados na pasta config_client.
+    [cite: 2026-01-22, 2026-02-02]
+    """
+    # Define o caminho para a pasta configurada [cite: 2026-02-02]
+    path = os.path.join("config_client", f"{variable_name}.txt")
+    
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            # Espera o formato: VARIABLE = "VALUE" [cite: 2026-01-22]
+            content = f.read()
+            if "=" in content:
+                return content.split('"')[1] # Extrai o que está entre aspas
     return None
 
 # --- CAMADA DE INTELIGÊNCIA ARTIFICIAL ---
@@ -38,7 +48,6 @@ class NeuralKoreWAF:
             print("💾 [SISTEMA] Modelo salvo para inicialização rápida.")
 
     def _dados_base(self):
-        # Dataset inicial para garantir que o sistema suba sem erros
         data = [
             ("index.php?id=1", "Safe"), ("/home", "Safe"),
             ("' OR 1=1 --", "SQLi"), ("<script>alert(1)</script>", "XSS"),
@@ -49,11 +58,12 @@ class NeuralKoreWAF:
 
 # --- CAMADA DE COMUNICAÇÃO E RESPOSTA ---
 def enviar_alerta_telegram(mensagem):
-    token = get_cred("TELEGRAM_TOKEN.txt")
-    chat_id = get_cred("TELEGRAM_CHATID.txt")
+    # Busca na pasta config_client conforme suas instruções [cite: 2026-01-22, 2026-02-02]
+    token = get_cred("TELEGRAM_TOKEN")
+    chat_id = get_cred("TELEGRAM_CHATID")
     
     if not token or not chat_id:
-        print("⚠️ [ERRO] Arquivos de token/ID não encontrados. Alerta via Telegram abortado.")
+        print("⚠️ [ERRO] Arquivos de token/ID não encontrados em config_client. Alerta abortado.")
         return
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -75,7 +85,6 @@ waf = NeuralKoreWAF()
 waf.inicializar()
 
 def processar_requisicao(payload, ip_cliente):
-    # 1. Filtro de Reputação (Blacklist de IPs Proxy/Suspeitos)
     IP_BLACKLIST = ["45.77.12.34", "104.248.10.12"] 
     
     if ip_cliente in IP_BLACKLIST:
@@ -85,14 +94,12 @@ def processar_requisicao(payload, ip_cliente):
         enviar_alerta_telegram(aviso)
         return False
 
-    # 2. Análise de Payload via Machine Learning
     X_input = waf.vectorizer.transform([payload])
     probabilidades = waf.clf.predict_proba(X_input)[0]
     classe_id = np.argmax(probabilidades)
     confianca = probabilidades[classe_id] * 100
     categoria = waf.le.inverse_transform([classe_id])[0]
 
-    # 3. Decisão Defensiva
     if categoria != "Safe" and confianca > 45:
         alerta_msg = (
             f"⚔️ *INCIDENTE DE CIBERSEGURANÇA*\n\n"
@@ -110,15 +117,25 @@ def processar_requisicao(payload, ip_cliente):
     print(f"✅ Requisição Limpa: {ip_cliente}")
     return True
 
-# --- TESTES DE INCIDENTES ---
+# --- LOOP DE MONITORAMENTO 24H ---
 if __name__ == "__main__":
-    print("🛰️  NeuralKore-WAF Online - Monitorando Tráfego...\n")
+    print("🛰️  NeuralKore-WAF Online - Vigilância 24h Ativada...\n")
     
-    # Simulação 1: SQL Injection
-    processar_requisicao("' UNION SELECT password FROM users--", "187.45.10.22")
-    
-    # Simulação 2: IP em Blacklist
-    processar_requisicao("index.html", "45.77.12.34")
-    
-    # Simulação 3: Tráfego legítimo
-    processar_requisicao("/api/v1/get_status", "200.10.20.30")
+    # Lista de simulação contínua (em um cenário real, isso leria logs de um servidor)
+    fila_simulada = [
+        ("' UNION SELECT password FROM users--", "187.45.10.22"),
+        ("index.html", "45.77.12.34"),
+        ("/api/v1/get_status", "200.10.20.30"),
+        ("<script>alert('XSS')</script>", "192.168.1.50")
+    ]
+
+    try:
+        while True:
+            for payload, ip in fila_simulada:
+                processar_requisicao(payload, ip)
+                # Pausa para não sobrecarregar e manter a furtividade/análise
+                time.sleep(5) 
+            
+            print(f"\n[SISTEMA] Ciclo de varredura completo em {datetime.now()}. Reiniciando vigilância...")
+    except KeyboardInterrupt:
+        print("\n shutting down... Vigilância encerrada pelo usuário.")
