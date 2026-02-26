@@ -1,18 +1,63 @@
 # Cibersegurança
 
-# NeuralKore-WAF
+# # 🛡️ NeuralKore-WAF (Intelligent HIDS/WAF)
 
-Firewall inteligente (WAF) que usa Machine Learning para bloquear ataques web e enviar alertas em tempo real via Telegram.
+**Desenvolvido por:** Willian de Oliveira  
+**Certificação:** Cibersegurança Essencial pela IBSEC (Instituto Brasileiro de Cirsegurança)  
+**Versão:** 1.0.0
 
-## Diferenciais
-- **IA (Random Forest):** Detecta ataques por comportamento, não apenas regras fixas.
-- **Alertas Instantâneos:** Notificação de invasão direto no seu Telegram.
-- **Bloqueio de IP:** Blacklist nativa para Proxies e IPs suspeitos.
+---
+
+## 📖 Visão Geral
+
+O **NeuralKore-WAF** é um sistema inteligente de detecção de intrusão (HIDS) focado em inspeção de payloads em tempo real. Diferente de firewalls tradicionais baseados em assinaturas estáticas (Regex), o NeuralKore utiliza **Machine Learning** para identificar comportamentos anômalos e tentativas de exploração no tráfego web.
+
+Este projeto foi desenhado para atuar na vanguarda da defesa, fornecendo visibilidade total sobre o atacante e gerando documentação forense instantânea.
+
+---
+
+## 🧠 Diferenciais Estratégicos
+
+### 1. Detecção Baseada em Inteligência Artificial
+Utiliza o algoritmo **Random Forest** com vetorização de caracteres (**TF-IDF**), permitindo que o sistema identifique:
+* **Ataques conhecidos:** SQLi, XSS, RCE, LFI.
+* **Zero-Days:** Identificação de padrões suspeitos mesmo em payloads nunca antes catalogados.
+
+### 2. Análise Forense Automatizada
+Ao detectar uma ameaça, o sistema não apenas alerta, mas executa o triângulo da resposta a incidentes:
+* **Exposição em Tempo Real:** Detalhes do invasor (IP, Dispositivo, User-Agent) exibidos no terminal.
+* **Relatórios Legíveis (.txt):** Geração automática de "fichas criminais" detalhadas para auditoria.
+* **Log de Auditoria:** Registro persistente para análise post-mortem.
+
+### 3. Fingerprinting do Invasor
+O sistema captura e correlaciona metadados críticos:
+* **🌐 IP de Origem:** Identificação do ponto de ataque.
+* **🖥 Dispositivo e UA:** Mapeamento do ambiente do atacante.
+* **🕛 Timestamp Preciso:** Cronologia exata para resposta a incidentes.
+
+---
+
+## 🛠️ Arquitetura Técnica
+
+
+
+* **Linguagem:** Python 3.x
+* **Engine de IA:** Scikit-Learn (Random Forest Classifier)
+* **Processamento de Linguagem:** TF-IDF Vectorizer (N-grams)
+* **Input Stream:** Monitoramento de logs via File Tailing (O(1) overhead)
+
+---
+
+## 🚀 Como Executar
+
+1. **Ative seu ambiente virtual:**
+   ```bash
+   source venv/bin/activate
+
 
 ## Instalação Rápida
 1. Instale as bibliotecas: `pip install -r requirements.txt`
-2. Configure seus tokens nos arquivos: `TELEGRAM_TOKEN.txt` e `TELEGRAM_CHATID.txt`
-3. Execute: `python main.py`
+2. Execução NeuralKore-WAF.py
 
 ---
 *Focado em Segurança Defensiva e Inteligência Artificial.*
