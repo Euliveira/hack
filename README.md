@@ -54,18 +54,23 @@ O sistema captura e correlaciona metadados críticos:
    ```Linux
    source venv/bin/activate
 
-
-## Instalação Rápida
-1. git clone https://github.com/euliveira/hack
-2. Instale as bibliotecas: `pip install -r requirements.txt'
-2. Execução NeuralKore-WAF.py
-3. Execução 
-
 ---
+
 *Focado em Segurança Defensivo e Ofensivo com Inteligência Artificial.*
 
 ## Testes de invasão:
 1. SQL Injection
 2. Open Redirect
 3. XSS (Cross-Site Scripting)
+
+
+## Instalação Rápida
+1. git clone https://github.com/euliveira/hack
+2. Instale as bibliotecas: `pip install -r requirements.txt'
+2. Execução NeuralKore-WAF.py
+
+## Bug Bounty ou Pentest
+1. Execução openredirect.py
+2. Execução sqlinjection.py
+3. Execução xss.py
 
