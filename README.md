@@ -51,7 +51,7 @@ O sistema captura e correlaciona metadados críticos:
 ## 🚀 Como Executar
 
 1. **Ative seu ambiente virtual:**
-   ```bash
+   ```Linux
    source venv/bin/activate
 
 
@@ -60,6 +60,6 @@ O sistema captura e correlaciona metadados críticos:
 2. Execução NeuralKore-WAF.py
 
 ---
-*Focado em Segurança Defensiva e Inteligência Artificial.*
+*Focado em Segurança Defensivo e Ofensivo com Inteligência Artificial.*
 
-#Aqui tambem sera e contrato códigos com Payloads diversos para Segurança Ofensivo
+#Códigos com Payloads diversos
