@@ -1,141 +1,141 @@
 import os
-import requests
 import joblib
 import pandas as pd
-import numpy as np
 import time
 from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 
-# --- CAMADA DE INFRAESTRUTURA ---
-def get_cred(variable_name):
-    """
-    Lê tokens conforme a regra de arquivos separados na pasta config_client.
-    [cite: 2026-01-22, 2026-02-02]
-    """
-    # Define o caminho para a pasta configurada [cite: 2026-02-02]
-    path = os.path.join("config_client", f"{variable_name}.txt")
-    
-    if os.path.exists(path):
-        with open(path, "r") as f:
-            # Espera o formato: VARIABLE = "VALUE" [cite: 2026-01-22]
-            content = f.read()
-            if "=" in content:
-                return content.split('"')[1] # Extrai o que está entre aspas
-    return None
+print("""
+=================================================================
+          IDS - Sistema de Identificação de Intrusão
+           Desenvolvedor: Willian de Oliveira
+           Cibersegurança Defensiva
+           Certificação pela IBSEC
+=================================================================
+""")
 
-# --- CAMADA DE INTELIGÊNCIA ARTIFICIAL ---
 class NeuralKoreWAF:
     def __init__(self):
+        self.model_path = "models/cyber_model.pkl"
+        self.log_path = "logs/audit_forense.log"
+        self.report_dir = "reports"
+        self.target_stream = "server_access.log"
+        
         self.vectorizer = TfidfVectorizer(ngram_range=(2, 5), analyzer='char')
-        self.clf = RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=-1)
+        self.clf = RandomForestClassifier(n_estimators=200, max_depth=20, random_state=42)
         self.le = LabelEncoder()
-        self.model_file = "cyber_model.pkl"
+        
+        os.makedirs("models", exist_ok=True)
+        os.makedirs("logs", exist_ok=True)
+        os.makedirs(self.report_dir, exist_ok=True)
 
-    def inicializar(self, csv_path=None):
-        if os.path.exists(self.model_file):
-            print("📦 [SISTEMA] Carregando inteligência pré-treinada...")
-            self.clf, self.vectorizer, self.le = joblib.load(self.model_file)
+    def initialize_engine(self):
+        if os.path.exists(self.model_path):
+            self.clf, self.vectorizer, self.le = joblib.load(self.model_path)
         else:
-            print("🧠 [SISTEMA] Treinando nova rede neural defensiva...")
-            df = pd.read_csv(csv_path) if csv_path else self._dados_base()
+            print("🧠 Treinando Inteligência Artificial com padrões OWASP...")
+            training_data = [
+                ("index.php?id=1", "Safe"), ("api/v1/user", "Safe"),
+                ("<script>alert(1)</script>", "XSS"), ("<svg/onload=alert(1)>", "XSS"),
+                ("' OR 1=1 --", "SQLi"), ("SELECT * FROM users", "SQLi"),
+                ("; rm -rf /", "RCE"), ("python -c 'import socket'", "RCE"),
+                ("../../../etc/passwd", "LFI"), ("php://filter/", "LFI")
+            ]
+            df = pd.DataFrame(training_data, columns=['payload', 'label'])
             y = self.le.fit_transform(df['label'])
             X = self.vectorizer.fit_transform(df['payload'])
             self.clf.fit(X, y)
-            joblib.dump((self.clf, self.vectorizer, self.le), self.model_file)
-            print("💾 [SISTEMA] Modelo salvo para inicialização rápida.")
+            joblib.dump((self.clf, self.vectorizer, self.le), self.model_path)
 
-    def _dados_base(self):
-        data = [
-            ("index.php?id=1", "Safe"), ("/home", "Safe"),
-            ("' OR 1=1 --", "SQLi"), ("<script>alert(1)</script>", "XSS"),
-            ("; whoami", "RCE"), ("../../etc/passwd", "PathTraversal"),
-            ("?url=http://169.254.169.254", "SSRF")
-        ]
-        return pd.DataFrame(data, columns=['payload', 'label'])
+    def gerar_relatorio_detalhado(self, dados):
+        """Gera um relatório forense completo em .txt"""
+        data_arquivo = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nome_relatorio = f"{self.report_dir}/incidente_{data_arquivo}.txt"
+        
+        conteudo = f"""
+================================================================
+          RELATÓRIO DE INCIDENTE DETECTADO PELA IA
+================================================================
+RESPONSÁVEL: Willian de Oliveira (IBSEC)
+HORÁRIO: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
+----------------------------------------------------------------
+[DADOS DO INVASOR]
+🌐 IP: {dados['ip']}
+🖥 DISPOSITIVO: {dados['dispositivo']}
+🌐 USER-AGENT: {dados['ua']}
 
-# --- CAMADA DE COMUNICAÇÃO E RESPOSTA ---
-def enviar_alerta_telegram(mensagem):
-    # Busca na pasta config_client conforme suas instruções [cite: 2026-01-22, 2026-02-02]
-    token = get_cred("TELEGRAM_TOKEN")
-    chat_id = get_cred("TELEGRAM_CHATID")
-    
-    if not token or not chat_id:
-        print("⚠️ [ERRO] Arquivos de token/ID não encontrados em config_client. Alerta abortado.")
-        return
+[ANÁLISE DO ATAQUE]
+💉 CATEGORIA: {dados['categoria']}
+🎯 CONFIANÇA DA IA: {dados['confianca']:.2f}%
+💣 PAYLOAD: {dados['payload']}
 
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": mensagem, "parse_mode": "Markdown"}
-    
-    try:
-        response = requests.post(url, data=payload, timeout=10)
-        if response.status_code != 200:
-            print(f"❌ Erro na API do Telegram: {response.text}")
-    except Exception as e:
-        print(f"❌ Falha de conexão ao enviar alerta: {e}")
+[AMBIENTE]
+💻 SERVIDOR: {dados['servidor']}
+----------------------------------------------------------------
+Relatório gerado para fins de auditoria forense.
+================================================================
+"""
+        with open(nome_relatorio, "w", encoding="utf-8") as f:
+            f.write(conteudo)
+        return nome_relatorio
 
-def logs_auditoria(evento):
-    with open("audit_firewall.log", "a", encoding="utf-8") as f:
-        f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {evento}\n")
+    def inspect_payload(self, line):
+        if not line.strip(): return
+        
+        # Formato esperado no log: IP | Payload | Dispositivo | User-Agent | Servidor
+        parts = line.split(" | ")
+        if len(parts) >= 5:
+            ip, payload, dispositivo, ua, servidor = parts[0], parts[1], parts[2], parts[3], parts[4]
+        else:
+            ip, payload, dispositivo, ua, servidor = "Desconhecido", line, "Desconhecido", "Desconhecido", "Localhost"
 
-# --- ENGINE DE INTERCEPTAÇÃO ---
-waf = NeuralKoreWAF()
-waf.inicializar()
-
-def processar_requisicao(payload, ip_cliente):
-    IP_BLACKLIST = ["45.77.12.34", "104.248.10.12"] 
-    
-    if ip_cliente in IP_BLACKLIST:
-        aviso = f"🚫 *BLOQUEIO POR REPUTAÇÃO*\nIP: `{ip_cliente}`\nStatus: Conexão encerrada."
-        print(f"🚩 Bloqueado IP Suspeito: {ip_cliente}")
-        logs_auditoria(f"IP_BLACKLIST_BLOCK: {ip_cliente}")
-        enviar_alerta_telegram(aviso)
-        return False
-
-    X_input = waf.vectorizer.transform([payload])
-    probabilidades = waf.clf.predict_proba(X_input)[0]
-    classe_id = np.argmax(probabilidades)
-    confianca = probabilidades[classe_id] * 100
-    categoria = waf.le.inverse_transform([classe_id])[0]
-
-    if categoria != "Safe" and confianca > 45:
-        alerta_msg = (
-            f"⚔️ *INCIDENTE DE CIBERSEGURANÇA*\n\n"
-            f"🔹 *Tipo:* `{categoria}`\n"
-            f"🔹 *Confiança:* `{confianca:.2f}%`\n"
-            f"🔹 *Origem:* `{ip_cliente}`\n"
-            f"🔹 *Payload:* `{payload}`\n\n"
-            f"🛡️ _Ação: Requisição bloqueada pelo NeuralKore._"
-        )
-        print(f"🔥 ATAQUE DETECTADO: {categoria} de {ip_cliente}")
-        logs_auditoria(f"ATAQUE_{categoria}: {payload} | IP: {ip_cliente} | Conf: {confianca:.2f}%")
-        enviar_alerta_telegram(alerta_msg)
-        return False
-    
-    print(f"✅ Requisição Limpa: {ip_cliente}")
-    return True
-
-# --- LOOP DE MONITORAMENTO 24H ---
-if __name__ == "__main__":
-    print("🛰️  NeuralKore-WAF Online - Vigilância 24h Ativada...\n")
-    
-    # Lista de simulação contínua (em um cenário real, isso leria logs de um servidor)
-    fila_simulada = [
-        ("' UNION SELECT password FROM users--", "187.45.10.22"),
-        ("index.html", "45.77.12.34"),
-        ("/api/v1/get_status", "200.10.20.30"),
-        ("<script>alert('XSS')</script>", "192.168.1.50")
-    ]
-
-    try:
-        while True:
-            for payload, ip in fila_simulada:
-                processar_requisicao(payload, ip)
-                # Pausa para não sobrecarregar e manter a furtividade/análise
-                time.sleep(5) 
+        X = self.vectorizer.transform([payload])
+        prediction = self.clf.predict(X)[0]
+        confidence = max(self.clf.predict_proba(X)[0]) * 100
+        category = self.le.inverse_transform([prediction])[0]
+        
+        if category != "Safe" and confidence > 80:
+            horario = datetime.now().strftime("%H:%M:%S")
             
-            print(f"\n[SISTEMA] Ciclo de varredura completo em {datetime.now()}. Reiniciando vigilância...")
+            # 1. EXIBIÇÃO IMEDIATA NO TERMINAL
+            print("\n" + "🚨" * 15)
+            print(f"🚨 [ALERTA] INVASOR DETECTADO!")
+            print(f"🌐 IP: {ip}")
+            print(f"💉 ATAQUE: {category} ({confidence:.2f}%)")
+            print(f"🕛 Horário: {horario}")
+            print(f"💣 Payload: {payload}")
+            print(f"🖥 Dispositivo: {dispositivo}")
+            print(f"🌐 User-Agent: {ua}")
+            print(f"💻 Servidor: {servidor}")
+            print("🚨" * 15 + "\n")
+
+            # 2. GERAÇÃO DO RELATÓRIO TXT
+            self.gerar_relatorio_detalhado({
+                'ip': ip, 'payload': payload, 'dispositivo': dispositivo,
+                'ua': ua, 'servidor': servidor, 'categoria': category,
+                'confianca': confidence
+            })
+
+    def start_monitoring(self):
+        print(f"🛰️ Vigilância Ativa - Monitorando: {self.target_stream}")
+        if not os.path.exists(self.target_stream):
+            open(self.target_stream, 'w').close()
+
+        with open(self.target_stream, "r") as f:
+            f.seek(0, 2)
+            while True:
+                line = f.readline()
+                if not line:
+                    time.sleep(0.1)
+                    continue
+                self.inspect_payload(line.strip())
+
+if __name__ == "__main__":
+    waf = NeuralKoreWAF()
+    waf.initialize_engine()
+    try:
+        waf.start_monitoring()
     except KeyboardInterrupt:
-        print("\n shutting down... Vigilância encerrada pelo usuário.")
+        print("\n🛑 Monitoramento encerrado pelo operador.")
