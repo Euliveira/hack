@@ -56,8 +56,10 @@ O sistema captura e correlaciona metadados críticos:
 
 
 ## Instalação Rápida
-1. Instale as bibliotecas: `pip install -r requirements.txt`
+1. git clone https://github.com/euliveira/hack
+2. Instale as bibliotecas: `pip install -r requirements.txt'
 2. Execução NeuralKore-WAF.py
+3. Execução 
 
 ---
 *Focado em Segurança Defensivo e Ofensivo com Inteligência Artificial.*
