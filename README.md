@@ -62,4 +62,8 @@ O sistema captura e correlaciona metadados críticos:
 ---
 *Focado em Segurança Defensivo e Ofensivo com Inteligência Artificial.*
 
-#Códigos com Payloads diversos
+## Testes de invasão:
+1. SQL Injection
+2. Open Redirect
+3. XSS (Cross-Site Scripting)
+
