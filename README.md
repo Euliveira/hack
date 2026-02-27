@@ -39,38 +39,81 @@ O sistema captura e correlaciona metadados críticos:
 
 ## 🛠️ Arquitetura Técnica
 
+* **Linguagem:** Python 3.x  
+* **Launcher Principal:** app.py  
+* **Servidor Web:** Flask  
+* **Comunicação em Tempo Real:** Flask-SocketIO (WebSockets)  
+* **Engine de IA:** Scikit-Learn (Random Forest Classifier)  
+* **Vetorização de Texto:** TF-IDF (N-grams)  
+* **Persistência de Modelo:** Joblib (.pkl)  
+* **Processamento de Dados:** Pandas  
+* **Interface Web:** HTML (templates/index.html)  
+* **Monitoramento de Logs:** File Tailing (O(1) overhead)
+---
 
 
-* **Linguagem:** Python 3.x
-* **Engine de IA:** Scikit-Learn (Random Forest Classifier)
-* **Processamento de Linguagem:** TF-IDF Vectorizer (N-grams)
-* **Input Stream:** Monitoramento de logs via File Tailing (O(1) overhead)
+ ## Como Executar:
+
+### Clone o repositório
+
+```bash
+git clone https://github.com/euliveira/hack
+cd hack
+```
 
 ---
 
-## 🚀 Como Executar
+### Crie e ative o ambiente virtual (Opcional)
 
-1. **Ative seu ambiente virtual:**
-   ```Linux
-   source venv/bin/activate
+#### Linux / WSL
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+#### Windows
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
 
 ---
 
-*Focado em Segurança Defensivo e Ofensivo com Inteligência Artificial.*
+### Instale as dependências
 
-## Testes de invasão:
-1. SQL Injection
-2. Open Redirect
-3. XSS (Cross-Site Scripting)
+```bash
+pip install -r requirements.txt
+```
 
+---
 
-## Instalação Rápida
-1. git clone https://github.com/euliveira/hack
-2. Instale as bibliotecas: `pip install -r requirements.txt'
-2. Execução NeuralKore-WAF.py
+### Execute o sistema
 
-## Bug Bounty ou Pentest
-1. Execução openredirect.py
-2. Execução sqlinjection.py
-3. Execução xss.py
+```bash
+python app.py
+```
 
+---
+
+### 🌐 Acesse no navegador
+
+http://localhost:5000
+
+---
+
+## 🛡️ Pentest e Bug Bounty
+
+Os scripts abaixo executam testes reais de exploração.
+
+⚠️ Utilize apenas em ambientes autorizados e com permissão explícita.  
+O uso indevido pode violar a LGPD e demais legislações aplicáveis.
+
+```bash
+python openredirect.py
+python sqlinjection.py
+python xss.py
+```
+
+---
+
+🔐 Projeto focado em Segurança Defensiva e Ofensiva com Inteligência Artificial.
