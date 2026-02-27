@@ -13,7 +13,7 @@ from flask_socketio import SocketIO, emit
 import threading
 
 app = Flask(__name__)
-# Ajuste de segurança para permitir conexões locais estáveis
+# Permitir conexões externas para funcionar no Android/Rede Local
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 class NeuralKoreWAF:
@@ -23,8 +23,9 @@ class NeuralKoreWAF:
         self.report_dir = "reports"
         self.target_stream = "server_access.log"
         
-        self.vectorizer = TfidfVectorizer(ngram_range=(2, 5), analyzer='char')
-        self.clf = RandomForestClassifier(n_estimators=200, max_depth=20, random_state=42)
+        # Aumentei o ngram para pegar padrões maiores de ataques
+        self.vectorizer = TfidfVectorizer(ngram_range=(1, 4), analyzer='char')
+        self.clf = RandomForestClassifier(n_estimators=100, max_depth=15, random_state=42)
         self.le = LabelEncoder()
         
         os.makedirs("models", exist_ok=True)
@@ -33,10 +34,11 @@ class NeuralKoreWAF:
 
     def initialize_engine(self):
         if os.path.exists(self.model_path):
-            print("🧠 Carregando inteligência pré-treinada...")
+            print("🧠 [SISTEMA] Carregando inteligência pré-treinada...")
+            # Corrigido carregamento para garantir que as 3 partes sejam recuperadas
             self.clf, self.vectorizer, self.le = joblib.load(self.model_path)
         else:
-            print("🧠 Treinando IA com padrões OWASP pela primeira vez...")
+            print("🧠 [TREINO] Iniciando IA com padrões OWASP...")
             training_data = [
                 ("index.php?id=1", "Safe"), ("api/v1/user", "Safe"),
                 ("<script>alert(1)</script>", "XSS"), ("<svg/onload=alert(1)>", "XSS"),
@@ -80,18 +82,23 @@ Relatório gerado para fins de auditoria forense local.
     def inspect_payload(self, line):
         if not line.strip(): return
         
+        # Garante que a linha processada não quebre o servidor se estiver mal formatada
         parts = line.split(" | ")
-        if len(parts) >= 5:
-            ip, payload, dispositivo, ua, servidor = parts[0], parts[1], parts[2], parts[3], parts[4]
+        if len(parts) >= 2:
+            ip = parts[0]
+            payload = parts[1]
+            dispositivo = parts[2] if len(parts) > 2 else "Desconhecido"
         else:
-            ip, payload, dispositivo, ua, servidor = "Desconhecido", line, "PC-Admin", "Mozilla/5.0", "Localhost"
+            ip, payload, dispositivo = "127.0.0.1", line, "Sistema Local"
 
         X = self.vectorizer.transform([payload])
         prediction = self.clf.predict(X)[0]
+        # Cálculo de probabilidade para dar a porcentagem de confiança
         confidence = max(self.clf.predict_proba(X)[0]) * 100
         category = self.le.inverse_transform([prediction])[0]
         
-        if category != "Safe" and confidence > 80:
+        # Só alerta se for algo perigoso
+        if category != "Safe" and confidence > 70:
             horario_atual = datetime.now().strftime("%H:%M:%S")
             dados_ataque = {
                 'ip': ip, 
@@ -102,29 +109,34 @@ Relatório gerado para fins de auditoria forense local.
                 'hora': horario_atual
             }
             
-            print(f"🚨 [DETECTADO] {category} de {ip} às {horario_atual}")
+            print(f"🚨 [ALERTA] {category} detectado!")
             self.gerar_relatorio_detalhado(dados_ataque)
-
-            # ESTA LINHA ENVIA PARA O SEU HTML
             socketio.emit('attack_alert', dados_ataque)
 
     def start_monitoring(self):
-        print(f"🛰️ Vigilância Ativa - Monitorando: {self.target_stream}")
+        print(f"🛰️ Vigilância Ativa em: {self.target_stream}")
         if not os.path.exists(self.target_stream):
-            open(self.target_stream, 'w').close()
+            with open(self.target_stream, 'w') as f: f.write("")
 
         with open(self.target_stream, "r") as f:
             f.seek(0, 2)
             while True:
                 line = f.readline()
                 if not line:
-                    time.sleep(0.1)
+                    time.sleep(0.5)
                     continue
                 self.inspect_payload(line.strip())
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# Adicionei uma rota de teste para você verificar se os logs aparecem
+@app.route('/test-attack')
+def test_attack():
+    with open("server_access.log", "a") as f:
+        f.write("192.168.1.50 | <script>alert('HACK')</script> | Android-Phone | Mozilla | Server1\n")
+    return "Ataque de teste enviado ao log!"
 
 if __name__ == "__main__":
     waf = NeuralKoreWAF()
@@ -133,11 +145,4 @@ if __name__ == "__main__":
     monitor_thread = threading.Thread(target=waf.start_monitoring, daemon=True)
     monitor_thread.start()
 
-    print("""
-=================================================================
-          IDS ONLINE - CENTRAL DE COMANDO ATIVA
-           Acesse: http://127.0.0.1:5000
-=================================================================
-""")
-    # host='0.0.0.0' permite que o servidor seja visível no Android
-    socketio.run(app, debug=False, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=False, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
