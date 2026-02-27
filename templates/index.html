@@ -80,7 +80,7 @@
         .threat-badge {
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.7rem;
-            color: var(--neon-blue); /* Começa azul (Normal) */
+            color: var(--neon-blue);
             border: 1px solid var(--neon-blue);
             padding: 3px 8px;
             border-radius: 3px;
@@ -131,7 +131,7 @@
             z-index: 50;
             width: 90%;
             max-width: 400px;
-            display: none; /* OCULTO POR PADRÃO */
+            display: none;
         }
 
         .intrusion-card {
@@ -167,7 +167,7 @@
             left: 10px;
             right: 10px;
             background: rgba(10, 0, 0, 0.9);
-            border: 1px solid var(--neon-blue); /* Começa azul */
+            border: 1px solid var(--neon-blue);
             padding: 15px;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -197,12 +197,14 @@
             background: rgba(0,0,0,0.6);
             padding: 10px;
             font-size: 0.65rem;
-            color: var(--neon-blue); /* Começa azul */
+            color: var(--neon-blue);
             word-break: break-all;
             border-left: 2px solid var(--neon-blue);
             text-shadow: 0 0 5px rgba(0, 242, 255, 0.4);
             line-height: 1.5;
             transition: color 0.5s, border-color 0.5s;
+            max-height: 80px;
+            overflow-y: auto;
         }
 
         .detected .payload-box {
@@ -238,16 +240,10 @@
             user-select: none;
         }
 
-        .menu-header-bar:hover {
-            background: rgba(0, 242, 255, 0.08);
-            box-shadow: 0 0 16px rgba(0, 242, 255, 0.25);
-        }
-
         .menu-header-bar.active {
             background: rgba(255, 49, 49, 0.2);
             border-color: var(--neon-red);
             color: var(--neon-red);
-            box-shadow: 0 0 14px rgba(255, 49, 49, 0.3);
         }
 
         .menu-items {
@@ -286,7 +282,6 @@
         .nav-link:hover {
             color: var(--neon-blue);
             background: rgba(0, 242, 255, 0.05);
-            text-shadow: 0 0 8px rgba(0, 242, 255, 0.4);
         }
 
         .nav-link i { color: var(--neon-blue); width: 20px; }
@@ -305,13 +300,6 @@
             color: var(--neon-blue);
             font-weight: bold;
             font-size: 0.9rem;
-        }
-
-        .ig-handle i {
-            font-size: 1.5rem;
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
     </style>
 </head>
@@ -346,7 +334,7 @@
                     <span id="attack-time">--:--:--</span>
                 </div>
                 <div class="detail-item">
-                    <label style="color:#666; display:block; font-size:0.5rem;">IP ORIGEM</label>
+                    <label style="color:#666; display:block; font-size:0.5rem;">ESTADO</label>
                     <span id="ip-origem">Scanning...</span>
                 </div>
                 <div class="payload-box" id="payload-content">
@@ -361,11 +349,12 @@
             MENU <i class="fas fa-bars"></i>
         </div>
         <div class="menu-items" id="containerItems">
-            <a href="#" class="nav-link"><i class="fas fa-microchip"></i> MONITORAMENTO</a>
-            <a href="#" class="nav-link"><i class="fas fa-skull-crossbones"></i> ALERTAS</a>
-            <a href="#" class="nav-link"><i class="fas fa-network-wired"></i> DISPOSITIVOS</a>
-            <a href="#" class="nav-link"><i class="fas fa-terminal"></i> LOGS</a>
-            <a href="#" class="nav-link"><i class="fas fa-file-invoice"></i> RELATÓRIOS</a>
+            <a href="javascript:void(0)" onclick="navegar('MONITORAMENTO')" class="nav-link"><i class="fas fa-microchip"></i> MONITORAMENTO</a>
+            <a href="javascript:void(0)" onclick="navegar('ALERTAS')" class="nav-link"><i class="fas fa-skull-crossbones"></i> ALERTAS</a>
+            <a href="javascript:void(0)" onclick="navegar('DISPOSITIVOS')" class="nav-link"><i class="fas fa-network-wired"></i> DISPOSITIVOS</a>
+            <a href="javascript:void(0)" onclick="navegar('LOGS')" class="nav-link"><i class="fas fa-terminal"></i> LOGS</a>
+            <a href="javascript:void(0)" onclick="navegar('RELATÓRIOS')" class="nav-link"><i class="fas fa-file-invoice"></i> RELATÓRIOS</a>
+            
             <div class="footer-dev">
                 <h4 style="font-size: 0.5rem; color: #555; text-transform: uppercase; margin-bottom: 5px;">Desenvolvedor</h4>
                 <a href="https://www.instagram.com/willoliveiradev" target="_blank" class="ig-handle">
@@ -378,6 +367,7 @@
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
+        // 1. RELÓGIO
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('pt-BR', { hour12: false });
@@ -385,11 +375,26 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        // 2. TOGGLE MENU
         function toggleMenu() {
             document.getElementById('btnMenu').classList.toggle('active');
             document.getElementById('containerItems').classList.toggle('open');
         }
 
+        // 3. FUNÇÃO DE NAVEGAÇÃO DOS BOTÕES
+        function navegar(secao) {
+            const payload = document.getElementById('payload-content');
+            const status = document.getElementById('ip-origem');
+            
+            toggleMenu(); // Fecha o menu ao clicar
+            
+            status.textContent = "ACESSANDO...";
+            payload.innerHTML = `SISTEMA: Carregando módulo de ${secao}...<br>Aguardando resposta do servidor...`;
+            
+            console.log("Mudando para seção: " + secao);
+        }
+
+        // 4. ANIMAÇÃO DO FUNDO (CANVAS)
         const canvas = document.getElementById('trafficCanvas');
         const ctx = canvas.getContext('2d');
         let dataPackets = [];
@@ -402,19 +407,18 @@
             init() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 3 + 0.5;
-                this.speedX = Math.random() * 3 + 1;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 2 + 1;
                 this.color = Math.random() > 0.9 ? '#ff3131' : '#00f2ff';
-                this.opacity = Math.random() * 0.6 + 0.3;
+                this.opacity = Math.random() * 0.5;
             }
             update() { this.x += this.speedX; if (this.x > canvas.width) this.init(); }
             draw() {
                 ctx.globalAlpha = this.opacity; ctx.fillStyle = this.color;
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-                ctx.globalAlpha = 1;
             }
         }
-        for(let i = 0; i < 150; i++) dataPackets.push(new Packet());
+        for(let i = 0; i < 100; i++) dataPackets.push(new Packet());
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             dataPackets.forEach(p => { p.update(); p.draw(); });
@@ -422,27 +426,22 @@
         }
         animate();
 
-        // --- LÓGICA DE RECEBIMENTO DE ATAQUE ---
+        // 5. CONEXÃO SOCKET (INTELIGÊNCIA ARTIFICIAL)
         const socket = io();
         socket.on('attack_alert', function(data) {
-            // 1. Mostra o Card de Alerta e muda as cores do painel
+            // Alerta sonoro visual
             document.getElementById('alert-overlay').style.display = 'block';
             document.getElementById('status-badge').classList.add('critical');
             document.getElementById('status-badge').innerHTML = '<div class="threat-dot"></div> THREAT: CRITICAL';
             document.getElementById('details-panel').classList.add('detected');
 
-            // 2. Preenche os dados reais
+            // Preenche dados da IA
             document.getElementById('attack-time').textContent = data.hora;
             document.getElementById('ip-origem').textContent = data.ip;
-            document.getElementById('payload-content').innerHTML = `TIPO: ${data.categoria} | CONFIANÇA: ${data.confianca}% <br> PAYLOAD: ${data.payload}`;
+            document.getElementById('payload-content').innerHTML = `<strong>ALERTA IA:</strong> ${data.categoria} (${data.confianca}%)<br><strong>DATA:</strong> ${data.payload}`;
             
-            // 3. Efeito de brilho temporário
-            const card = document.querySelector('.intrusion-card');
-            card.style.boxShadow = "0 0 80px rgba(255, 49, 49, 1)";
-            setTimeout(() => { card.style.boxShadow = "0 0 40px rgba(255, 49, 49, 0.5)"; }, 1000);
-
-            // 4. Opcional: O alerta some após 15 segundos se você quiser
-            // setTimeout(() => { document.getElementById('alert-overlay').style.display = 'none'; }, 15000);
+            // Remove o overlay após 8 segundos para não travar a tela
+            setTimeout(() => { document.getElementById('alert-overlay').style.display = 'none'; }, 8000);
         });
     </script>
 </body>
