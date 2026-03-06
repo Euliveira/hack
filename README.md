@@ -109,11 +109,11 @@ Os scripts abaixo executam testes reais de exploração.
 O uso indevido pode violar a LGPD e demais legislações aplicáveis.
 
 ```bash
-python openredirect.py
-python sqlinjection.py
-python xss.py
-```
-
+python3 openredirect.py
+python3 sqlinjection.py
+python3 xss.py
+python3 sensive_files.py
+python3 idor.py
 ---
 
 🔐 Projeto focado em Segurança Defensiva e Ofensiva com Inteligência Artificial.
